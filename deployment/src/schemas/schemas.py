@@ -7,16 +7,16 @@ from fastapi import UploadFile, File
 from typing import ForwardRef
 
 class UserUpdate(BaseModel):
-  email: str
-  password: str
-  email_validated: bool = False
-  active: bool = True
-  temporary_password: bool = False
-  last_modified: datetime = datetime.utcnow()
+    email: str
+    password: str
+    email_validated: bool = False
+    active: bool = True
+    temporary_password: bool = False
+    last_modified: datetime = datetime.utcnow()
 
 class UserCreate(UserUpdate):
-  id: str
-  
+    id: str
+
 class User(UserCreate):
-  date_registered: datetime
-  model_config = ConfigDict(from_attributes=True)
+    date_registered: datetime
+    model_config = ConfigDict(from_attributes=True)

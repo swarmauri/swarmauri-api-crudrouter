@@ -52,6 +52,7 @@ venv.bak/
 p38venv/
 v2pyd/
 v1pyd/
+pydantic2/
 
 # Databases
 *.db

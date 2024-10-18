@@ -1,5 +1,4 @@
 from typing import Optional, Type, Any
-
 from fastapi import Depends, HTTPException
 from pydantic import create_model
 
@@ -13,8 +12,12 @@ class AttrDict(dict):  # type: ignore
 
 
 def get_pk_type(schema: Type[PYDANTIC_SCHEMA], pk_field: str) -> Any:
+    """
+    Patched method to get primary key type.
+    This patch replaces the original get_pk_type method.
+    """
     try:
-        return schema.__fields__[pk_field].type_
+        return schema.__fields__[pk_field].annotation  
     except KeyError:
         return int
 
@@ -23,13 +26,13 @@ def schema_factory(
     schema_cls: Type[T], pk_field_name: str = "id", name: str = "Create"
 ) -> Type[T]:
     """
-    Is used to create a CreateSchema which does not contain pk
+    Patched method to create a schema without the primary key field.
+    This patch replaces the original schema_factory method.
     """
-
     fields = {
-        f.name: (f.type_, ...)
-        for f in schema_cls.__fields__.values()
-        if f.name != pk_field_name
+        name: (f.annotation, ...)  
+        for name, f in schema_cls.__fields__.items()
+        if name != pk_field_name
     }
 
     name = schema_cls.__name__ + name
@@ -50,9 +53,8 @@ def create_query_validation_exception(field: str, msg: str) -> HTTPException:
 
 def pagination_factory(max_limit: Optional[int] = None) -> Any:
     """
-    Created the pagination dependency to be used in the router
+    Creates the pagination dependency to be used in the router.
     """
-
     def pagination(skip: int = 0, limit: Optional[int] = max_limit) -> PAGINATION:
         if skip < 0:
             raise create_query_validation_exception(
@@ -63,13 +65,13 @@ def pagination_factory(max_limit: Optional[int] = None) -> Any:
         if limit is not None:
             if limit <= 0:
                 raise create_query_validation_exception(
-                    field="limit", msg="limit query parameter must be greater then zero"
+                    field="limit", msg="limit query parameter must be greater than zero"
                 )
 
             elif max_limit and max_limit < limit:
                 raise create_query_validation_exception(
                     field="limit",
-                    msg=f"limit query parameter must be less then {max_limit}",
+                    msg=f"limit query parameter must be less than {max_limit}",
                 )
 
         return {"skip": skip, "limit": limit}
